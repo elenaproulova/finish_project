@@ -5,9 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ec2463f5-52dd-4f72-97bc-f2d3803083b5" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/bot/ai_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/transcrib_voice.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/ai_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/ai_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/transcrib_voice.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/transcrib_voice.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,6 +23,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="2" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectColorInfo">{
@@ -37,7 +43,7 @@
     "Python.ai_service.executor": "Run",
     "Python.main.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "2",
+    "git-widget-placeholder": "3",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>

@@ -11,10 +11,8 @@ def ai_service(answer):
   completion = client.chat.completions.create(
     model="deepseek/deepseek-r1-0528-qwen3-8b:free",
     messages=[
-      {
-        {"role": "system", "content": f""},
-        {"role": "user", "content":f"{answer}" },
-      }
+      {"role": "system", "content": f"Ты — помощник по языковой практике. Оцени ответ пользователя."},
+      {"role": "user", "content":f"{answer}" },
     ]
   )
   a = completion.choices[0].message.content

@@ -67,3 +67,15 @@ def tts_gtts_mp3_bytes(
     with open(out, "rb") as f:
         data = f.read()
     return data
+
+import speech_recognition as sr
+
+def transcribe_voice(filename):
+    r = sr.Recognizer()
+    with sr.AudioFile(filename) as source:
+        audio = r.record(source)
+    try:
+        text = r.recognize_google(audio, language="en-US")  # или другой язык
+    except Exception as e:
+        text = "Извините, я не смог распознать голос."
+    return text

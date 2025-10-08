@@ -6,8 +6,17 @@ from config import TOKEN, API_KEY
 import os
 import sqlite3
 from datetime import datetime
+from ai_service import *
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm import FSM, State
+
 
 DB_PATH = "data/db.sqlite3"
+
+
+class PracticeState(FSM):
+    waiting_for_voice = State()
+
 def ensure_db():
     dirpath = os.path.dirname(DB_PATH)
     if dirpath:
@@ -47,6 +56,48 @@ def upsert_user(telegram_id: int, first_name: str, last_name: str, username:str)
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
+
+
+@dp.message(Command('practice'))
+async def practice_handler(message: Message, state: FSMContext):
+    # Генерируем задание
+    exercise_text = ai_service_exercise()
+    # Создаем TTS для задания
+    tts_bytes = tts_gtts_mp3_bytes(exercise_text)
+    with open("tts.mp3", "wb") as f:
+        f.write(tts_bytes)
+    # Отправляем задание
+    voice = FSInputFile("tts.mp3")
+    await message.answer("Послушайте задание:")
+    await message.answer_voice(voice)
+    # Запрашиваем ответ пользователя
+    await message.answer("Пожалуйста, ответьте голосом.")
+    # Устанавливаем состояние ожидания голоса
+    await state.set_state(PracticeState.waiting_for_voice)
+
+@dp.message(PracticeState.waiting_for_voice)
+async def handle_voice_response(message: Message, state: FSMContext):
+    if not message.voice:
+        await message.answer("Пожалуйста, отправьте голосовое сообщение.")
+        return
+    voice = message.voice
+    # Скачиваем голосовое сообщение
+    filename = "user_response.ogg"
+    await voice.download(destination_file=filename)
+    # Конвертируем OGG в WAV или MP3 при необходимости
+    # Предположим, что transcribe_voice умеет работать с ogg
+    user_text = transcribe_voice(filename)
+    os.remove(filename)
+
+    # Получаем обратную связь от AI
+    feedback = ai_service(user_text)
+
+    await message.answer(f"Ваш ответ: {user_text}")
+    await message.answer(f"Обратная связь:\n{feedback}")
+
+    # Сброс состояния
+    await state.clear()
+
 
 
 
