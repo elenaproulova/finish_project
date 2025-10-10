@@ -1,7 +1,7 @@
 from openai import OpenAI
 from transcrib_voice import *
 
-def ai_service(answer):
+def ai_service(answer, test):
   """функция, которая оценивает корректность выполнения задания"""
   client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
@@ -11,7 +11,7 @@ def ai_service(answer):
   completion = client.chat.completions.create(
     model="deepseek/deepseek-r1-0528-qwen3-8b:free",
     messages=[
-      {"role": "system", "content": f"Ты — помощник по языковой практике. Оцени ответ пользователя."},
+      {"role": "system", "content": f"Ты — помощник по языковой практике. Оцени ответ пользователя.{test}"},
       {"role": "user", "content":f"{answer}" },
     ]
   )
@@ -19,11 +19,13 @@ def ai_service(answer):
   print(a)
   return a
 
+ai_service(text,test)
+
 def ai_service_exercise():
   """функция, которая придумывает задания"""
   client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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",
+    api_key="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",
   )
 
   completion = client.chat.completions.create(

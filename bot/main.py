@@ -1,4 +1,5 @@
 import asyncio
+import tempfile
 from aiogram import Bot, Dispatcher
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, FSInputFile
@@ -8,13 +9,13 @@ import sqlite3
 from datetime import datetime
 from ai_service import *
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm import FSM, State
-
+from aiogram.fsm.state import State, StatesGroup
+from transcrib_voice import *
 
 DB_PATH = "data/db.sqlite3"
 
 
-class PracticeState(FSM):
+class PracticeState(StatesGroup):
     waiting_for_voice = State()
 
 def ensure_db():
@@ -58,6 +59,8 @@ bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
 
+
+
 @dp.message(Command('practice'))
 async def practice_handler(message: Message, state: FSMContext):
     # Генерируем задание
@@ -75,17 +78,36 @@ async def practice_handler(message: Message, state: FSMContext):
     # Устанавливаем состояние ожидания голоса
     await state.set_state(PracticeState.waiting_for_voice)
 
+
+
+
 @dp.message(PracticeState.waiting_for_voice)
 async def handle_voice_response(message: Message, state: FSMContext):
     if not message.voice:
         await message.answer("Пожалуйста, отправьте голосовое сообщение.")
         return
-    voice = message.voice
+    voice = message.voice.file_id
     # Скачиваем голосовое сообщение
     filename = "user_response.ogg"
-    await voice.download(destination_file=filename)
+    tg_voicefile = await bot.get_file(voice)
     # Конвертируем OGG в WAV или MP3 при необходимости
     # Предположим, что transcribe_voice умеет работать с ogg
+    with tempfile.TemporaryDirectory() as td:
+        ogg_path = os.path.join(td, "user_response.ogg")
+        await bot.download_file(tg_voicefile.file_path, destination=ogg_path)
+        text = transcribe_audio_file(
+            ogg_path,
+            model=whisper,
+            language="en",
+            ffmpeg_path=r"C:\ffmpeg\bin\ffmpeg.exe"  # или просто "ffmpeg", если в PATH
+        )
+        print(text)
+        return text
+
+
+
+
+
     user_text = transcribe_voice(filename)
     os.remove(filename)
 
@@ -124,6 +146,8 @@ async def start_handler(message: Message):
         await message.answer(
             f"Привет, {first_name}! Ты уже зарегистрирован в SpeakSmart."
         )
+
+
 
 async def main():
     await dp.start_polling(bot)

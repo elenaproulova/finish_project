@@ -1,8 +1,9 @@
+from gtts import gTTS
 import os
 import tempfile
 import subprocess
-from typing import Optional
-from gtts import gTTS
+from typing import Optional, Tuple
+from faster_whisper import WhisperModel
 
 def tts_gtts_voice_opus_bytes(
     text: str,
@@ -40,9 +41,7 @@ def tts_gtts_voice_opus_bytes(
         with open(ogg_path, "rb") as f:
             return f.read()
 
-from gtts import gTTS
-import tempfile, os
-from typing import Optional
+
 
 def tts_gtts_mp3_bytes(
     text: str,
@@ -79,3 +78,75 @@ def transcribe_voice(filename):
     except Exception as e:
         text = "Извините, я не смог распознать голос."
     return text
+
+def _run_ffmpeg(cmd: list) -> None:
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if proc.returncode != 0:
+        raise RuntimeError("FFmpeg error: " + proc.stderr.decode("utf-8", "ignore")[:800])
+
+
+def transcribe_audio_file(
+    input_path: str,
+    *,
+    model: Optional[WhisperModel] = None,
+    model_size: str = "small",
+    device: str = "cpu",          # "cpu" или "cuda"
+    compute_type: str = "int8",   # на GPU обычно "float16"
+    language: Optional[str] = "ru",
+    ffmpeg_path: str = "ffmpeg",
+    beam_size: int = 5,
+    return_segments: bool = False
+):
+    if not os.path.isfile(input_path):
+        raise FileNotFoundError(f"Файл не найден: {input_path}")
+
+    own_model = False
+    if model is None:
+        model = WhisperModel(model_size, device=device, compute_type=compute_type)
+        own_model = True
+
+    try:
+        with tempfile.TemporaryDirectory() as td:
+            wav_path = os.path.join(td, "audio.wav")
+            _run_ffmpeg([
+                ffmpeg_path, "-y",
+                "-i", input_path,
+                "-ac", "1",
+                "-ar", "16000",
+                "-c:a", "pcm_s16le",
+                wav_path
+            ])
+
+            segments, info = model.transcribe(
+                wav_path,
+                language=language,
+                beam_size=beam_size,
+                vad_filter=True
+            )
+
+            text = " ".join(s.text.strip() for s in segments).strip()
+            if return_segments:
+                # Вернём ещё сегменты с таймкодами
+                seg_list = [
+                    {"start": s.start, "end": s.end, "text": s.text}
+                    for s in model.transcribe(wav_path, language=language, beam_size=beam_size, vad_filter=True)[0]
+                ]
+                return text, seg_list, info
+
+            return text
+    finally:
+        if own_model:
+            try:
+                del model
+            except Exception:
+                pass
+
+whisper = WhisperModel("small", device="cpu", compute_type="int8")
+
+text = transcribe_audio_file(
+    "tts.mp3",
+    model=whisper,
+    language="en",
+    ffmpeg_path=r"C:\ffmpeg\bin\ffmpeg.exe"  # или просто "ffmpeg", если в PATH
+)
+print(text)
