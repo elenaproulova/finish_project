@@ -11,6 +11,7 @@ from ai_service import *
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from transcrib_voice import *
+from keyboard import get_answer_keyboard
 
 DB_PATH = "data/db.sqlite3"
 
@@ -62,7 +63,9 @@ dp = Dispatcher()
 
 
 @dp.message(Command('practice'))
-async def practice_handler(message: Message, state: FSMContext):
+async def practice_handler(message: Message):
+    # Сообщение о начале генерации
+    await message.answer("Сейчас происходит генерация задания, пожалуйста, подождите...")
     # Генерируем задание
     exercise_text = ai_service_exercise()
     # Создаем TTS для задания
@@ -74,18 +77,20 @@ async def practice_handler(message: Message, state: FSMContext):
     await message.answer("Послушайте задание:")
     await message.answer_voice(voice)
     # Запрашиваем ответ пользователя
-    await message.answer("Пожалуйста, ответьте голосом.")
-    # Устанавливаем состояние ожидания голоса
-    await state.set_state(PracticeState.waiting_for_voice)
+    await message.answer(
+        "Пожалуйста, запишите свой ответ голосом и нажмите кнопку ниже.",
+        reply_markup=get_answer_keyboard()
+    )
 
 
-
-
-@dp.message(PracticeState.waiting_for_voice)
-async def handle_voice_response(message: Message, state: FSMContext):
+# @dp.message(PracticeState.waiting_for_voice)
+async def handle_voice_response(message: Message):
     if not message.voice:
         await message.answer("Пожалуйста, отправьте голосовое сообщение.")
         return
+        # Отправляем сообщение о начале обработки
+    processing_msg = await message.answer("Обработка вашего голосового сообщения... Пожалуйста, подождите.")
+
     voice = message.voice.file_id
     # Скачиваем голосовое сообщение
     filename = "user_response.ogg"
@@ -117,8 +122,7 @@ async def handle_voice_response(message: Message, state: FSMContext):
     await message.answer(f"Ваш ответ: {user_text}")
     await message.answer(f"Обратная связь:\n{feedback}")
 
-    # Сброс состояния
-    await state.clear()
+    
 
 
 
