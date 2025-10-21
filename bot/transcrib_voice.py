@@ -45,7 +45,7 @@ def tts_gtts_voice_opus_bytes(
 
 def tts_gtts_mp3_bytes(
     text: str,
-    lang: str = "ru",
+    lang: str = "en",
     slow: bool = False,
     tld: str = "com",
     save_path: Optional[str] = None
