@@ -1,6 +1,6 @@
 import asyncio
 import tempfile
-from aiogram import Bot, Dispatcher, Router, F
+from aiogram import Bot, Dispatcher, Router, F, types
 from aiogram.filters import CommandStart, Command, StateFilter
 from aiogram.types import Message, FSInputFile
 from config import TOKEN, API_KEY
@@ -11,7 +11,7 @@ from ai_service import *
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from transcrib_voice import *
-# from keyboard import get_answer_keyboard
+from keyboard import create_help_keyboard
 
 DB_PATH = "data/db.sqlite3"
 
@@ -204,8 +204,28 @@ async def practice_handler(message: Message, state: FSMContext, bot: Bot):
 
 
 @router.message(Command('help'))
-async def help(message: Message):
-   await message.answer("Этот бот умеет выполнять команды:\n/start \n/help \n/practice \n/support")
+async def help(message: types.Message):
+   faq_text = ("Ответы на частые вопросы:\nЧто нужно сделать, чтобы начать практиковать язык с ботом? "
+                "\nПросто напишите команду /practice в диалоге с ботом. После этого бот предложит первые задания для практики. "
+                "\nНа каких языках можно практиковаться с помощью бота?" 
+                "\nВ настоящее время бот поддерживает английский язык. В будущем планируется расширение списка доступных языков. "
+                "\nКак настроить сложность заданий под свой уровень?"
+                "\nБот предлагает задания для уровня А1, А2, В1."
+                "\nКак узнать, правильно ли я выполняю задания?"
+                "\nБот автоматически проверяет ваши ответы и предоставляет обратную связь."
+                "\nМогу ли я пользоваться ботом в любое время?"
+                "\nДа, бот доступен 24/7 без ограничений по времени. "
+                "Вы можете практиковать язык когда угодно и где угодно, главное — иметь доступ к интернету. Количество заданий и время использования не ограничены."
+                )
+   keyboard = create_help_keyboard()
+   await message.answer(faq_text, reply_markup=keyboard)
+
+@router.callback_query(lambda c: c.data == 'ask_question')
+async def process_ask_question(callback_query: types.CallbackQuery):
+    await callback_query.answer()
+    await callback_query.message.answer(
+        "Пожалуйста, опишите ваш вопрос. Мы ответим вам в ближайшее время."
+    )
 
 @router.message(Command(commands=["start"]))
 async def start_handler(message: Message):
