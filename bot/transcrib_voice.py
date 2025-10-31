@@ -141,12 +141,4 @@ def transcribe_audio_file(
             except Exception:
                 pass
 
-whisper = WhisperModel("small", device="cpu", compute_type="int8")
 
-text = transcribe_audio_file(
-    "tts.mp3",
-    model=whisper,
-    language="en",
-    ffmpeg_path=r"C:\ffmpeg\bin\ffmpeg.exe"  # или просто "ffmpeg", если в PATH
-)
-print(text)

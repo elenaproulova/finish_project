@@ -8,16 +8,14 @@
 
 
 from aiogram import types
-from aiogram.dispatcher.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # Создаем клавиатуру с кнопкой
 def create_help_keyboard():
-    keyboard = InlineKeyboardMarkup(row_width=1)
-    button = InlineKeyboardButton(
-        text="Задать свой вопрос",
-        callback_data="ask_question"
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="Задать вопрос", callback_data="ask_question")]
+        ]
     )
-    keyboard.add(button)
     return keyboard
 

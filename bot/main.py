@@ -13,11 +13,15 @@ from aiogram.fsm.state import State, StatesGroup
 from transcrib_voice import *
 from keyboard import create_help_keyboard
 
-DB_PATH = "data/db.sqlite3"
 
+DB_PATH = "data/db.sqlite3"
+MANAGER_CHAT_ID = 404791943
 
 class PracticeState(StatesGroup):
     waiting_for_voice = State()
+
+class AskQuestion(StatesGroup):
+    waiting_for_question = State()
 
 def ensure_db():
     dirpath = os.path.dirname(DB_PATH)
@@ -115,7 +119,7 @@ async def practice_handler(message: Message, state: FSMContext, bot: Bot):
             # Транскрибируем (пример с Whisper)
             user_text = transcribe_audio_file(
                 ogg_path,
-                model=whisper,
+                model="whisper",
                 language="en",
                 ffmpeg_path=r"C:\\ffmpeg\\bin\\ffmpeg.exe"  # или "ffmpeg", если он в PATH
             )
@@ -220,12 +224,37 @@ async def help(message: types.Message):
    keyboard = create_help_keyboard()
    await message.answer(faq_text, reply_markup=keyboard)
 
-@router.callback_query(lambda c: c.data == 'ask_question')
-async def process_ask_question(callback_query: types.CallbackQuery):
+@router.callback_query(F.data == 'ask_question')
+async def process_ask_question(callback_query: types.CallbackQuery, state: FSMContext):
     await callback_query.answer()
     await callback_query.message.answer(
         "Пожалуйста, опишите ваш вопрос. Мы ответим вам в ближайшее время."
     )
+    # Устанавливаем состояние ожидания вопроса
+    await state.set_state(AskQuestion.waiting_for_question)
+# === Обработчик ввода вопроса ===
+@router.message(AskQuestion.waiting_for_question)
+async def receive_question(message: types.Message, state: FSMContext):
+    quest = message.text
+
+    # Отправляем вопрос в Вашу функцию
+    from ai_service import ai_service_faq  # замените на актуальный импорт
+    answer = ai_service_faq(quest)
+
+    # Проверяем результат
+    if answer == "0":
+        # Если функция не нашла ответ — пересылаем менеджеру
+        await message.bot.send_message(
+            MANAGER_CHAT_ID,
+            f"❓ Новый вопрос от пользователя @{message.from_user.username or message.from_user.id}:\n\n{quest}"
+        )
+        await message.answer("Ваш вопрос передан менеджеру. Ожидайте ответа 🙏")
+    else:
+        # Если есть ответ — отправляем пользователю
+        await message.answer(f"Ответ: {answer}")
+
+    # Сбрасываем состояние
+    await state.clear()
 
 @router.message(Command(commands=["start"]))
 async def start_handler(message: Message):

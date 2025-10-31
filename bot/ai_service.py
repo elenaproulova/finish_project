@@ -1,11 +1,11 @@
 from openai import OpenAI
-from transcrib_voice import *
+
 
 def ai_service(answer, text):
   """функция, которая оценивает корректность выполнения задания"""
   client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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",
+    api_key="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",
   )
 
   completion = client.chat.completions.create(
@@ -19,13 +19,13 @@ def ai_service(answer, text):
   print(a)
   return a
 
-ai_service(text,text)
+
 
 def ai_service_exercise():
   """функция, которая придумывает задания"""
   client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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",
+    api_key="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",
   )
 
   completion = client.chat.completions.create(
@@ -39,12 +39,12 @@ def ai_service_exercise():
   print(b)
   return b
 
-c = ai_service_exercise()
-tts_gtts_mp3_bytes(c)
+
 
 def ai_service_faq(question):
   """функция, которая отправляем вопрос оператору"""
   # Формируем структурированный список FAQ
+  print("функция запущена")
   faq_list = {
     "Как начать практиковать язык с ботом?": "Просто напишите команду /practice в диалоге с ботом. После этого бот предложит первые задания для практики.",
     "На каких языках можно практиковаться?": "В настоящее время бот поддерживает английский язык. В будущем планируется расширение списка доступных языков.",
@@ -58,20 +58,19 @@ def ai_service_faq(question):
 
   client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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",
+    api_key="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",
   )
 
   completion = client.chat.completions.create(
     model="deepseek/deepseek-r1-0528-qwen3-8b:free",
     messages=[
       {"role": "system", "content": f"Это список вопросов и ответов FAQ:\n{faq_text}\n\nТвоя задача: проверь, есть ли вопрос пользователя в этом списке FAQ. Если вопрос есть в списке — верни текст соответствующего ответа. Если вопроса нет в списке — верни число 0. "},
-      {"role": "user", "content":f"{question}" }
+      {"role": "user", "content":f"{question}"}
     ]
   )
   response = completion.choices[0].message.content.strip()
+  print(response)
   # Проверяем, является ли ответ числом 0
-    if response == "0":
-      return 0
-    else:
-    return response
+  return response
+
 
