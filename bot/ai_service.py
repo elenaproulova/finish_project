@@ -5,7 +5,7 @@ def ai_service(answer, text):
   """функция, которая оценивает корректность выполнения задания"""
   client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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",
+    api_key="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",
   )
 
   completion = client.chat.completions.create(
@@ -25,7 +25,7 @@ def ai_service_exercise():
   """функция, которая придумывает задания"""
   client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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",
+    api_key="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",
   )
 
   completion = client.chat.completions.create(
@@ -58,13 +58,13 @@ def ai_service_faq(question):
 
   client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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",
+    api_key="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",
   )
 
   completion = client.chat.completions.create(
     model="deepseek/deepseek-r1-0528-qwen3-8b:free",
     messages=[
-      {"role": "system", "content": f"Это список вопросов и ответов FAQ:\n{faq_text}\n\nТвоя задача: проверь, есть ли вопрос пользователя в этом списке FAQ. Если вопрос есть в списке — верни текст соответствующего ответа. Если вопроса нет в списке — верни число 0." "},
+      {"role": "system", "content": f"Это список вопросов и ответов FAQ:\n{faq_text}\n\nТвоя задача: проверь, есть ли вопрос пользователя в этом списке FAQ. Если вопрос есть в списке — верни текст соответствующего ответа. Если вопроса нет в списке — верни число 0. "},
       {"role": "user", "content":f"{question}" }
     ]
   )
