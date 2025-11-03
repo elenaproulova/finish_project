@@ -28,6 +28,7 @@ def ensure_db():
 
     with sqlite3.connect(DB_PATH) as conn:
         cur = conn.cursor()
+        # таблица пользователей
         cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,6 +38,13 @@ def ensure_db():
         username TEXT,
         registered_at TEXT,
         last_seen TEXT)""")
+        # таблица сообщений пользователя
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS user_messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        telegram_id INTEGER,
+        message_text TEXT
+         timestamp TEXT)""")
         conn.commit()
 
 ensure_db()
@@ -57,6 +65,16 @@ def upsert_user(telegram_id: int, first_name: str, last_name: str, username:str)
             UPDATE users SET last_seen = ? WHERE telegram_id = ?""", (now, telegram_id))
             conn.commit()
             return False
+
+# Функция для сохранения сообщения
+def save_user_message(telegram_id: int, message_text: str):
+    now = datetime.utcnow().isoformat(timespec="seconds")
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.cursor()
+        cur.execute("""
+        INSERT INTO user_messages (telegram_id, message_text, timestamp)
+        VALUES (?, ?, ?)""", (telegram_id, message_text, now))
+        conn.commit()
 
 router = Router()
 bot = Bot(token=TOKEN)
@@ -170,8 +188,15 @@ async def process_ask_question(callback_query: types.CallbackQuery, state: FSMCo
 async def receive_question(message: types.Message, state: FSMContext):
     quest = message.text
 
-    # Отправляем вопрос в Вашу функцию
-    from ai_service import ai_service_faq  # замените на актуальный импорт
+    # Сохраняем сообщение пользователя в базу данных
+    save_user_message(
+        telegram_id=message.from_user.id,
+        message_text=quest,
+        timestamp=message.date.isoformat()
+    )
+
+    # Отправляем вопрос в функцию AI
+    from ai_service import ai_service_faq
     answer = ai_service_faq(quest)
 
     # Проверяем результат
