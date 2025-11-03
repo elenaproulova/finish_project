@@ -1,10 +1,8 @@
 import asyncio
-import tempfile
 from aiogram import Bot, Dispatcher, Router, F, types
 from aiogram.filters import CommandStart, Command, StateFilter
 from aiogram.types import Message, FSInputFile
 from config import TOKEN, API_KEY
-import os
 import sqlite3
 from datetime import datetime
 from ai_service import *
@@ -140,71 +138,6 @@ async def practice_handler(message: Message, state: FSMContext, bot: Bot):
         except Exception:
             pass
         return
-
-
-# @router.message(Command('practice'))
-# async def practice_handler(message: Message):
-#     # Сообщение о начале генерации
-#     await message.answer("Сейчас происходит генерация задания, пожалуйста, подождите...")
-#     # Генерируем задание
-#     exercise_text = ai_service_exercise()
-#     # Создаем TTS для задания
-#     tts_bytes = tts_gtts_mp3_bytes(exercise_text)
-#     with open("tts.mp3", "wb") as f:
-#         f.write(tts_bytes)
-#     # Отправляем задание
-#     voice = FSInputFile("tts.mp3")
-#     await message.answer("Послушайте задание:")
-#     await message.answer_voice(voice)
-#     # Запрашиваем ответ пользователя
-#     await message.answer(
-#         "Пожалуйста, запишите свой ответ голосом и нажмите кнопку ниже.",
-#     )
-#
-#
-#
-# @router.message(PracticeState.waiting_for_voice)
-# async def handle_voice_response(message: Message):
-#     if not message.voice:
-#         await message.answer("Пожалуйста, отправьте голосовое сообщение.")
-#         return
-#         # Отправляем сообщение о начале обработки
-#     processing_msg = await message.answer("Обработка вашего голосового сообщения... Пожалуйста, подождите.")
-#
-#     voice = message.voice.file_id
-#     # Скачиваем голосовое сообщение
-#     filename = "user_response.ogg"
-#     tg_voicefile = await bot.get_file(voice)
-#     # Конвертируем OGG в WAV или MP3 при необходимости
-#     # Предположим, что transcribe_voice умеет работать с ogg
-#     with tempfile.TemporaryDirectory() as td:
-#         ogg_path = os.path.join(td, "user_response.ogg")
-#         await bot.download_file(tg_voicefile.file_path, destination=ogg_path)
-#         text = transcribe_audio_file(
-#             ogg_path,
-#             model=whisper,
-#             language="en",
-#             ffmpeg_path=r"C:\ffmpeg\bin\ffmpeg.exe"  # или просто "ffmpeg", если в PATH
-#         )
-#         print(text)
-#         return text
-#
-#
-#
-#
-#
-#     user_text = transcribe_voice(filename)
-#     os.remove(filename)
-#
-#     # Получаем обратную связь от AI
-#     feedback = ai_service(user_text)
-#
-#     await message.answer(f"Ваш ответ: {user_text}")
-#     await message.answer(f"Обратная связь:\n{feedback}")
-#
-
-
-
 
 
 @router.message(Command('help'))

@@ -2,7 +2,7 @@ from gtts import gTTS
 import os
 import tempfile
 import subprocess
-from typing import Optional, Tuple
+from typing import Optional
 from faster_whisper import WhisperModel
 
 def tts_gtts_voice_opus_bytes(
