@@ -5,7 +5,7 @@ def ai_service(answer, text):
   """функция, которая оценивает корректность выполнения задания"""
   client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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",
+    api_key="_",
   )
 
   completion = client.chat.completions.create(
@@ -25,7 +25,7 @@ def ai_service_exercise():
   """функция, которая придумывает задания"""
   client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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",
+    api_key="_",
   )
 
   completion = client.chat.completions.create(
@@ -58,7 +58,7 @@ def ai_service_faq(question):
 
   client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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",
+    api_key="_",
   )
 
   completion = client.chat.completions.create(
